@@ -1,4 +1,9 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { DialogClose } from '@radix-ui/react-dialog'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
+
+import { createUser } from '@/api/create-user'
 
 import { Button } from './ui/button'
 import { DialogHeader } from './ui/dialog'
@@ -12,42 +17,116 @@ import {
 } from './ui/select'
 import { Textarea } from './ui/textarea'
 
+const userSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  role: z.enum(['Desenvolvedor', 'Arquiteto', 'Engenheiro']),
+  description: z.string(),
+})
+
+type UserSchema = z.infer<typeof userSchema>
+
 export function UserDialogDetails() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    control,
+  } = useForm<UserSchema>({
+    resolver: zodResolver(userSchema),
+  })
+
+  async function handleUserCreate(data: UserSchema) {
+    try {
+      await createUser(data)
+    } catch (error) {
+      console.log('error')
+    }
+  }
+
   return (
     <>
       <DialogHeader>#1</DialogHeader>
-      <form action="#" className="flex flex-col gap-10">
+      <form
+        onSubmit={handleSubmit(handleUserCreate)}
+        className="flex flex-col gap-10"
+      >
+        {errors.role && <p>errorole</p>}
+        {errors.root?.message && <p>{errors.root?.message}</p>}
         <div className=" flex flex-col gap-6">
-          <label htmlFor="username" className="sr-only">
-            Nome de usuário
-          </label>
-          <Input
-            className="bg-primary-foreground text-foreground font-semibold text-sm placeholder:text-muted-foreground"
-            type="text"
-            id="username"
-            placeholder="Nome de usuário"
-          />
-          <Select>
-            <SelectTrigger className="">
-              <SelectValue placeholder="Cargo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="desenvolvedor">Desenvolvedor</SelectItem>
-              <SelectItem value="arquiteto">Arquiteto</SelectItem>
-              <SelectItem value="egenheiro">Egenheiro</SelectItem>
-            </SelectContent>
-          </Select>
+          <div>
+            <label htmlFor="name" className="sr-only">
+              Nome de usuário
+            </label>
+            <Input
+              className="bg-primary-foreground text-foreground font-semibold text-sm placeholder:text-muted-foreground"
+              type="text"
+              id="name"
+              placeholder="Nome de usuário"
+              {...register('name')}
+            />
+            {errors.name && (
+              <p className="text-destructive text-xs">Campo obrigatório</p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="email" className="sr-only">
+              E-mail
+            </label>
+            <Input
+              className="bg-primary-foreground text-foreground font-semibold text-sm placeholder:text-muted-foreground"
+              type="text"
+              id="email"
+              placeholder="E-mail"
+              {...register('email')}
+            />
+            {errors.email && (
+              <p className="text-destructive text-xs">
+                Insira um e-mail válido
+              </p>
+            )}
+          </div>
+          <div>
+            <Controller
+              name="role"
+              control={control}
+              defaultValue="Desenvolvedor"
+              render={() => (
+                <Select>
+                  <SelectTrigger className="">
+                    <SelectValue placeholder="Cargo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Desenvolvedor">Desenvolvedor</SelectItem>
+                    <SelectItem value="Arquiteto">Arquiteto</SelectItem>
+                    <SelectItem value="Engenheiro">Engenheiro</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.role && (
+              <p className="text-destructive text-xs">Campo obrigatório</p>
+            )}
+          </div>
 
-          <Textarea
-            className="resize-none"
-            placeholder="Descreva suas melhores habilidades"
-          />
+          <div>
+            <Textarea
+              className="resize-none"
+              placeholder="Descreva suas melhores habilidades"
+              {...register('description')}
+            />
+            {errors.description && (
+              <p className="text-destructive text-xs">Campo obrigatório</p>
+            )}
+          </div>
         </div>
         <div className="flex gap-4 justify-end">
-          <DialogClose>
+          <DialogClose asChild>
             <Button variant={'destructive'}>Cancelar</Button>
           </DialogClose>
-          <Button variant={'default'}>Adicionar</Button>
+          <Button type="submit" variant={'default'}>
+            Adicionar
+          </Button>
         </div>
       </form>
     </>

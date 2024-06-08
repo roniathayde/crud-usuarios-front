@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { getUsers } from '@/api/get-users'
+import { FilterUsers } from '@/components/filter-users'
 import { Header } from '@/components/header'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -47,29 +47,7 @@ export function Users() {
               </Button>
             </DialogTrigger>
             <div className="flex flex-col w-full">
-              <form action="" className="flex gap-2">
-                <label htmlFor="searchByName" className="sr-only">
-                  Buscar por nome
-                </label>
-                <Input
-                  className="bg-primary-foreground text-foreground font-semibold text-sm placeholder:text-muted-foreground"
-                  type="text"
-                  id="searchByName"
-                  placeholder="Buscar por nome..."
-                />
-
-                <label htmlFor="searchById" className="sr-only">
-                  Buscar por ID
-                </label>
-                <Input
-                  className="bg-primary-foreground text-foreground font-semibold text-sm placeholder:text-muted-foreground"
-                  type="text"
-                  id="searchById"
-                  placeholder="Buscar por ID..."
-                />
-
-                <Button variant={'outline'}>Filtrar</Button>
-              </form>
+              <FilterUsers />
 
               <Table>
                 <TableCaption>A lista de todos usuários.</TableCaption>
