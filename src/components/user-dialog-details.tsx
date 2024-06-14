@@ -1,9 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { DialogClose } from '@radix-ui/react-dialog'
+import { useMutation } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { createUser } from '@/api/create-user'
+import { GetUsersResponse } from '@/api/get-users'
+import { queryClient } from '@/lib/react-query'
 
 import { Button } from './ui/button'
 import { DialogHeader } from './ui/dialog'
@@ -32,15 +36,41 @@ export function UserDialogDetails() {
     handleSubmit,
     formState: { errors },
     control,
+    reset,
   } = useForm<UserSchema>({
     resolver: zodResolver(userSchema),
   })
 
+  const { mutateAsync: createUserFn, isPending: addNewUserBtnIsPending } =
+    useMutation({
+      mutationFn: createUser,
+      onSuccess: (newUser) => {
+        // Atualiza o cache de react-query para adicionar o novo usuário
+        queryClient.setQueryData<GetUsersResponse>(['users'], (oldUsers) => {
+          console.log('aqui', oldUsers)
+          if (!oldUsers) return { users: [newUser] } // Se não houver dados antigos, retorna apenas o novo usuário
+          return { users: [...oldUsers.users, newUser] } // Adiciona o novo usuário à lista existente
+        })
+
+        // Limpa os campos do formulário após a criação
+        reset()
+
+        // Notifica o usuário sobre o sucesso da criação
+        toast.success('Usuário adicionado com sucesso.')
+      },
+      onError: (error) => {
+        toast.error(`Falha ao criar usuário. ${error?.response?.data?.message}`)
+      },
+    })
+
   async function handleUserCreate(data: UserSchema) {
     try {
-      await createUser(data)
+      await createUserFn(data)
+
+      toast.success('Usuário adicionado com sucesso.')
     } catch (error) {
-      console.log('error')
+      console.log(error)
+      toast.error(`Falha ao criar usuário. ${error?.response?.data?.message}`)
     }
   }
 
@@ -124,7 +154,11 @@ export function UserDialogDetails() {
           <DialogClose asChild>
             <Button variant={'destructive'}>Cancelar</Button>
           </DialogClose>
-          <Button type="submit" variant={'default'}>
+          <Button
+            disabled={addNewUserBtnIsPending}
+            type="submit"
+            variant={'default'}
+          >
             Adicionar
           </Button>
         </div>

@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
 
 import { getUsers } from '@/api/get-users'
 import { FilterUsers } from '@/components/filter-users'
 import { Header } from '@/components/header'
-import { ThemeProvider } from '@/components/theme-provider'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import {
@@ -16,63 +16,66 @@ import {
 } from '@/components/ui/table'
 import { UserDialogDetails } from '@/components/user-dialog-details'
 import { UsersTableRow } from '@/components/users-row'
+import { useUsers } from '@/contexts/users'
 
 export function Users() {
-  // const [searchParams] = useSearchParams()
-
-  // const id = searchParams.get('id')
-  // const userName = searchParams.get('userName')
-  // const userRole = searchParams.get('role')
-
-  const { data: usersResult } = useQuery({
+  const { data: usersResult, isSuccess } = useQuery({
     queryKey: ['users'],
-    queryFn: () => getUsers(),
+    queryFn: getUsers,
+    staleTime: Infinity,
   })
 
-  console.log(usersResult)
+  console.log('teste')
+
+  const { users, setUsers } = useUsers()
+  const isFirstLoad = useRef(true) // Usado para evitar o loop infinito
+
+  useEffect(() => {
+    if (isSuccess && usersResult && isFirstLoad.current) {
+      setUsers({ users: usersResult.users })
+      // isFirstLoad.current = false // Evitar futuras atualizações desnecessárias
+    }
+  }, [isSuccess, usersResult, setUsers])
 
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <Dialog>
-        <DialogContent>
-          <UserDialogDetails />
-        </DialogContent>
-        <Header />
+    <Dialog>
+      <DialogContent>
+        <UserDialogDetails />
+      </DialogContent>
+      <Header />
 
-        <main className="w-full min-h-screen bg-primary-foreground flex justify-center items-center">
-          <div className="w-full max-w-[800px] flex flex-col justify-center items-start">
-            <DialogTrigger asChild>
-              <Button variant={'default'} className="mb-10">
-                Adicionar novo usuário
-              </Button>
-            </DialogTrigger>
-            <div className="flex flex-col w-full">
-              <FilterUsers />
+      <main className="w-full min-h-screen bg-primary-foreground flex justify-center items-center">
+        <div className="w-full max-w-[800px] flex flex-col justify-center items-start">
+          <DialogTrigger asChild>
+            <Button variant={'default'} className="mb-10">
+              Adicionar novo usuário
+            </Button>
+          </DialogTrigger>
+          <div className="flex flex-col w-full">
+            <FilterUsers />
 
-              <Table>
-                <TableCaption>A lista de todos usuários.</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px]">ID</TableHead>
-                    <TableHead>Nome de usuário</TableHead>
-                    <TableHead className="w-[200px]">Ocução</TableHead>
-                    <TableHead className="w-[100px]"></TableHead>
-                    <TableHead className="w-[100px]"></TableHead>
-                    <TableHead className="w-[100px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {/* <UsersTableRow /> */}
-                  {usersResult &&
-                    usersResult.users.map((user) => {
-                      return <UsersTableRow key={user.id} user={user} />
-                    })}
-                </TableBody>
-              </Table>
-            </div>
+            <Table>
+              <TableCaption>A lista de todos usuários.</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">ID</TableHead>
+                  <TableHead>Nome de usuário</TableHead>
+                  <TableHead className="w-[200px]">Ocupação</TableHead>
+                  <TableHead className="w-[100px]"></TableHead>
+                  <TableHead className="w-[100px]"></TableHead>
+                  <TableHead className="w-[100px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users &&
+                  users.users.map((user) => (
+                    <UsersTableRow key={user.id} user={user} />
+                  ))}
+              </TableBody>
+            </Table>
           </div>
-        </main>
-      </Dialog>
-    </ThemeProvider>
+        </div>
+      </main>
+    </Dialog>
   )
 }
