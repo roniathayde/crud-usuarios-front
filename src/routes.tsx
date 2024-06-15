@@ -1,17 +1,15 @@
 import { createBrowserRouter } from 'react-router-dom'
 
+import { EditUser } from './pages/edit-user'
 import { Users } from './pages/users'
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <Users />,
-    // errorElement: <Error />,
-    // errorElement: <Error />,
   },
-  // {
-  //   path: '*',
-  //   // element: <NotFound />,
-  //   element: <div>Rota não encontrada</div>,
-  // },
+  {
+    path: '/users/:id', // Rota dinâmica para edição do usuário
+    element: <EditUser />,
+  },
 ])

@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { deleteUser } from '@/api/delete-user'
@@ -6,6 +7,7 @@ import { GetUsersResponse } from '@/api/get-users'
 import { queryClient } from '@/lib/react-query'
 
 import { Button } from './ui/button'
+import { DialogTrigger } from './ui/dialog'
 import { TableCell, TableRow } from './ui/table'
 
 export interface UserSchema {
@@ -53,11 +55,11 @@ export function UsersTableRow({ user }: UsersTableRowProps) {
       <TableCell>{user.name}</TableCell>
       <TableCell>{user.role}</TableCell>
       <TableCell>
-        <Button variant={'ghost'}>Editar</Button>
+        <DialogTrigger asChild>
+          <Link to={`users/${user.id}`}>Editar</Link>
+        </DialogTrigger>
       </TableCell>
-      <TableCell>
-        <Button variant={'outline'}>Ver</Button>
-      </TableCell>
+
       <TableCell>
         <Button
           disabled={cancelIsPending}

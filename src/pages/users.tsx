@@ -63,7 +63,6 @@ export function Users() {
                   <TableHead className="w-[200px]">Ocupação</TableHead>
                   <TableHead className="w-[100px]"></TableHead>
                   <TableHead className="w-[100px]"></TableHead>
-                  <TableHead className="w-[100px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
