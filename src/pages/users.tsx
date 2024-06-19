@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react'
 
 import { getUsers } from '@/api/get-users'
 import { FilterUsers } from '@/components/filter-users'
-import { Header } from '@/components/header'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import {
@@ -25,8 +24,6 @@ export function Users() {
     staleTime: Infinity,
   })
 
-  console.log('teste')
-
   const { users, setUsers } = useUsers()
   const isFirstLoad = useRef(true) // Usado para evitar o loop infinito
 
@@ -42,7 +39,6 @@ export function Users() {
       <DialogContent>
         <UserDialogDetails />
       </DialogContent>
-      <Header />
 
       <main className="w-full min-h-screen bg-primary-foreground flex justify-center items-center">
         <div className="w-full max-w-[800px] flex flex-col justify-center items-start">

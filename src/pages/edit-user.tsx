@@ -1,94 +1,198 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { error } from 'console'
-import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { isError } from 'util'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { Link, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
+import { z } from 'zod'
 
-import { getOnlyOneUser, GetUserResponse } from '@/api/get-only-one-user'
-import { api } from '@/lib/axios'
+import { getOnlyOneUser } from '@/api/get-only-one-user'
+import { updateUser, UpdateUsersBody } from '@/api/update-user'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Textarea } from '@/components/ui/textarea'
 import { queryClient } from '@/lib/react-query'
 
-export function EditUser() {
-  const { id } = useParams<{ id: string }>() // Obtendo o ID da URL
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const [user, setUser] = useState<GetUserResponse | null>(null)
+const userSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  role: z.enum(['Desenvolvedor', 'Arquiteto', 'Engenheiro']),
+  description: z.string(),
+})
 
-  // Fetching user data using useQuery
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['user', id], // Query key that includes the user ID
-    queryFn: () => getOnlyOneUser(id!), // Fetching user data based on ID
-    // enabled: !!id, // Ensures the query runs only if id is not null
-    // staleTime: Infinity, // Cache indefinitely or adjust as needed
+type UserSchema = z.infer<typeof userSchema>
+
+export function EditUser() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    control,
+    setValue,
+  } = useForm<UserSchema>({
+    resolver: zodResolver(userSchema),
   })
 
-  useEffect(() => {}, [data])
+  const { id } = useParams<{ id: string }>() // Obtendo o ID da URL
 
-  // Mutation for updating user data
-  // const mutation = useMutation(
-  //   (updatedUser: GetUserResponse) => api.put(`/user/${id}`, updatedUser),
-  //   {
-  //     onSuccess: () => {
-  //       queryClient.invalidateQueries(['user', id])
-  //       navigate('/') // Navigate to the users list after successful update
-  //     },
-  //     onError: (err: any) => {
-  //       console.error('Failed to update user:', err.message)
-  //     },
-  //   },
-  // )
-  console.log('data; ', data)
-  // const handleSubmit = (event: React.FormEvent) => {
-  //   event.preventDefault()
-  //   if (user) {
-  //     mutation.mutate(user)
-  //   }
-  // }
+  const { data, isLoading, isError, isSuccess } = useQuery({
+    queryKey: ['user', id], // Query key that includes the user ID
+    queryFn: () => getOnlyOneUser(id!), // Fetching user data based on ID
+  })
 
-  if (isLoading) return <div>Loading...</div>
-  if (isError) return <div>Error: {error.message}</div>
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data: UpdateUsersBody) => updateUser(id!, data),
+    onSuccess: () => {
+      // Invalida a cache para atualizar a lista de usuários ou redirecionar
+      queryClient.invalidateQueries(['user', id])
+      toast.success('usuário atualizado com sucesso')
+    },
+    onError: (error) => {
+      console.error('Erro ao atualizar o usuário:', error)
+      toast.error('Erro ao atualizar o usuário')
+    },
+  })
+  const onSubmit = (formData: UserSchema) => {
+    mutate(formData)
+  }
+  console.log(isError)
 
-  return data ? (
-    <form>
-      <label>
-        Name:
-        <input
-          type="text"
-          value={user?.name || ''}
-          // onChange={(e) => setUser({ ...user, name: e.target.value })}
-        />
-      </label>
-      <label>
-        Role:
-        <input
-          type="text"
-          value={user?.role || ''}
-          // onChange={(e) => setUser({ ...user, role: e.target.value })}
-        />
-      </label>
-      <label>
-        Email:
-        <input
-          type="email"
-          value={user?.email || ''}
-          // onChange={(e) => setUser({ ...user, email: e.target.value })}
-        />
-      </label>
-      <label>
-        Description:
-        <textarea
-          value={user?.description || ''}
-          // onChange={(e) => setUser({ ...user, description: e.target.value })}
-        />
-      </label>
-      <button type="submit">
-        {/* {mutation.isLoading ? 'Saving...' : 'Save'} */}
-        SAVE
-      </button>
-      {/* {mutation.isError && <div>Error: {mutation.error?.message}</div>} */}
-      error
-    </form>
-  ) : (
-    <div>User not found</div>
+  useEffect(() => {
+    if (isSuccess) {
+      setValue('name', data.user.name)
+      setValue('email', data.user.email)
+      setValue('role', data.user.role)
+      setValue('description', data.user.description)
+    }
+  }, [data, isSuccess, setValue])
+
+  return (
+    <>
+      <div className="flex justify-center  ">
+        <div className="p-8  w-full max-w-[800px]">
+          {data && (
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex flex-col gap-10"
+            >
+              <h1 className="text-2xl font-bold tracking-tight">
+                Editar usuário {data.user.id}
+              </h1>
+              {errors.role && <p>errorole</p>}
+              {errors.root?.message && <p>{errors.root?.message}</p>}
+              <div className=" flex flex-col gap-6">
+                <div>
+                  <label htmlFor="name" className="sr-only">
+                    Nome de usuário
+                  </label>
+                  <Input
+                    className="bg-primary-foreground text-foreground font-semibold text-sm placeholder:text-muted-foreground"
+                    type="text"
+                    id="name"
+                    placeholder="Nome de usuário"
+                    {...register('name')}
+                  />
+                  {errors.name && (
+                    <p className="text-destructive text-xs">
+                      Campo obrigatório
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label htmlFor="email" className="sr-only">
+                    E-mail
+                  </label>
+                  <Input
+                    className="bg-primary-foreground text-foreground font-semibold text-sm placeholder:text-muted-foreground"
+                    type="text"
+                    id="email"
+                    placeholder="E-mail"
+                    {...register('email')}
+                  />
+                  {errors.email && (
+                    <p className="text-destructive text-xs">
+                      Insira um e-mail válido
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Controller
+                    name="role"
+                    control={control}
+                    defaultValue="Desenvolvedor"
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="">
+                          <SelectValue placeholder="Escolha um cargo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Desenvolvedor">
+                            Desenvolvedor
+                          </SelectItem>
+                          <SelectItem value="Arquiteto">Arquiteto</SelectItem>
+                          <SelectItem value="Engenheiro">Engenheiro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.role && (
+                    <p className="text-destructive text-xs">
+                      Campo obrigatório
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Textarea
+                    className="resize-none"
+                    placeholder="Descreva suas melhores habilidades"
+                    {...register('description')}
+                  />
+                  {errors.description && (
+                    <p className="text-destructive text-xs">
+                      Campo obrigatório
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-4 justify-end">
+                <Button variant="outline" asChild>
+                  <Link to="/">Voltar</Link>
+                </Button>
+                <Button disabled={isPending} type="submit" variant={'default'}>
+                  Adicionar
+                </Button>
+              </div>
+            </form>
+          )}
+          {isLoading && (
+            <div className="flex flex-col gap-10">
+              <div className=" flex flex-col gap-6">
+                <Skeleton className="w-full h-[40px] rounded-md" />
+                <Skeleton className="w-full h-[40px] rounded-md" />
+                <Skeleton className="w-full h-[40px] rounded-md" />
+                <Skeleton className="w-full h-[80px] rounded-md" />
+              </div>
+              <div className="flex gap-4 justify-end">
+                <Skeleton className="w-[72px] h-[40px] rounded-md" />
+                <Skeleton className="w-[92px] h-[40px] rounded-md" />
+              </div>
+            </div>
+          )}
+          {isError && <p>houve um erro</p>}
+        </div>
+      </div>
+    </>
   )
 }

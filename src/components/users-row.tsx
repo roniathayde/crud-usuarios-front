@@ -56,7 +56,11 @@ export function UsersTableRow({ user }: UsersTableRowProps) {
       <TableCell>{user.role}</TableCell>
       <TableCell>
         <DialogTrigger asChild>
-          <Link to={`users/${user.id}`}>Editar</Link>
+          <Button variant="outline" asChild>
+            <Link className="" to={`users/${user.id}`}>
+              Editar
+            </Link>
+          </Button>
         </DialogTrigger>
       </TableCell>
 
