@@ -1,11 +1,5 @@
 import { api } from '@/lib/axios'
 
-// interface GetUsersQuery {
-//   id: string | null
-//   userName: string | null
-//   userRole: string | null
-// }
-
 export interface GetUsersResponse {
   users: {
     id: string

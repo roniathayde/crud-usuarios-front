@@ -46,25 +46,20 @@ export function UserDialogDetails() {
     useMutation({
       mutationFn: createUser,
       onSuccess: (newUser) => {
-        // Atualiza o cache de react-query para adicionar o novo usuário
         queryClient.setQueryData<GetUsersResponse>(['users'], (oldUsers) => {
           console.log('aqui', oldUsers)
-          if (!oldUsers) return { users: [newUser] } // Se não houver dados antigos, retorna apenas o novo usuário
-          return { users: [...oldUsers.users, newUser] } // Adiciona o novo usuário à lista existente
+          if (!oldUsers) return { users: [newUser] }
+          return { users: [...oldUsers.users, newUser] }
         })
 
-        // Limpa os campos do formulário após a criação
         reset()
 
-        // Notifica o usuário sobre o sucesso da criação
         toast.success('Usuário adicionado com sucesso.')
       },
       onError: (error) => {
         if (axios.isAxiosError(error) && error.response) {
-          // Verifica se é um AxiosError e se há uma resposta
           toast.error(`Falha ao criar usuário. ${error.response.data.message}`)
         } else {
-          // Outro tipo de erro
           toast.error('Falha ao criar usuário. Erro desconhecido.')
         }
       },
@@ -77,10 +72,8 @@ export function UserDialogDetails() {
       toast.success('Usuário adicionado com sucesso.')
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        // Mostre a mensagem de erro da resposta
         toast.error(`Falha ao criar usuário. ${error.response.data.message}`)
       } else {
-        // Para qualquer outro tipo de erro, use uma mensagem genérica
         toast.error('Falha ao criar usuário. Erro desconhecido.')
       }
     }

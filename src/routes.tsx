@@ -13,7 +13,7 @@ export const router = createBrowserRouter([
         element: <Users />,
       },
       {
-        path: '/users/:id', // Rota dinâmica para edição do usuário
+        path: '/users/:id',
         element: <EditUser />,
       },
     ],

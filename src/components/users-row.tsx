@@ -28,7 +28,7 @@ export function UsersTableRow({ user }: UsersTableRowProps) {
       mutationFn: deleteUser,
       onSuccess: (_, userId) => {
         queryClient.setQueryData<GetUsersResponse>(['users'], (oldData) => {
-          if (!oldData) return { users: [] } // Caso não haja dados, retorna uma lista vazia
+          if (!oldData) return { users: [] }
           return {
             users: oldData.users.filter((user) => user.id !== userId),
           }
@@ -68,6 +68,7 @@ export function UsersTableRow({ user }: UsersTableRowProps) {
         <Button
           disabled={cancelIsPending}
           variant={'destructive'}
+          className="cursor-pointer"
           onClick={() => handleDeleteUser(user)}
         >
           Excluir

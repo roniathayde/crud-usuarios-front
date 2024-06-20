@@ -24,12 +24,11 @@ export function Users() {
   })
 
   const { users, setUsers } = useUsers()
-  const isFirstLoad = useRef(true) // Usado para evitar o loop infinito
+  const isFirstLoad = useRef(true)
 
   useEffect(() => {
     if (isSuccess && usersResult && isFirstLoad.current) {
       setUsers({ users: usersResult.users })
-      // isFirstLoad.current = false // Evitar futuras atualizações desnecessárias
     }
   }, [isSuccess, usersResult, setUsers])
 

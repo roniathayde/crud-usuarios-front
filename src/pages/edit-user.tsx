@@ -41,11 +41,11 @@ export function EditUser() {
     resolver: zodResolver(userSchema),
   })
 
-  const { id } = useParams<{ id: string }>() // Obtendo o ID da URL
+  const { id } = useParams<{ id: string }>()
 
   const { data, isLoading, isError, isSuccess } = useQuery({
-    queryKey: ['user', id], // Query key that includes the user ID
-    queryFn: () => getOnlyOneUser(id!), // Fetching user data based on ID
+    queryKey: ['user', id],
+    queryFn: () => getOnlyOneUser(id!),
   })
 
   const { mutate, isPending } = useMutation({
@@ -63,7 +63,6 @@ export function EditUser() {
   const onSubmit = (formData: UserSchema) => {
     mutate(formData)
   }
-  console.log(isError)
 
   useEffect(() => {
     if (isSuccess) {
