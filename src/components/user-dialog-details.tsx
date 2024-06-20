@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { useMutation } from '@tanstack/react-query'
+import axios from 'axios'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -59,7 +60,13 @@ export function UserDialogDetails() {
         toast.success('Usuário adicionado com sucesso.')
       },
       onError: (error) => {
-        toast.error(`Falha ao criar usuário. ${error?.response?.data?.message}`)
+        if (axios.isAxiosError(error) && error.response) {
+          // Verifica se é um AxiosError e se há uma resposta
+          toast.error(`Falha ao criar usuário. ${error.response.data.message}`)
+        } else {
+          // Outro tipo de erro
+          toast.error('Falha ao criar usuário. Erro desconhecido.')
+        }
       },
     })
 
@@ -69,8 +76,13 @@ export function UserDialogDetails() {
 
       toast.success('Usuário adicionado com sucesso.')
     } catch (error) {
-      console.log(error)
-      toast.error(`Falha ao criar usuário. ${error?.response?.data?.message}`)
+      if (axios.isAxiosError(error) && error.response) {
+        // Mostre a mensagem de erro da resposta
+        toast.error(`Falha ao criar usuário. ${error.response.data.message}`)
+      } else {
+        // Para qualquer outro tipo de erro, use uma mensagem genérica
+        toast.error('Falha ao criar usuário. Erro desconhecido.')
+      }
     }
   }
 

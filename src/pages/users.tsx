@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 
 import { getUsers } from '@/api/get-users'
-import { FilterUsers } from '@/components/filter-users'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import {
@@ -48,8 +47,6 @@ export function Users() {
             </Button>
           </DialogTrigger>
           <div className="flex flex-col w-full">
-            <FilterUsers />
-
             <Table>
               <TableCaption>A lista de todos usuários.</TableCaption>
               <TableHeader>

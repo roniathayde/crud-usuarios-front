@@ -51,8 +51,8 @@ export function EditUser() {
   const { mutate, isPending } = useMutation({
     mutationFn: (data: UpdateUsersBody) => updateUser(id!, data),
     onSuccess: () => {
-      // Invalida a cache para atualizar a lista de usuários ou redirecionar
-      queryClient.invalidateQueries(['user', id])
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+
       toast.success('usuário atualizado com sucesso')
     },
     onError: (error) => {
@@ -171,7 +171,7 @@ export function EditUser() {
                   <Link to="/">Voltar</Link>
                 </Button>
                 <Button disabled={isPending} type="submit" variant={'default'}>
-                  Adicionar
+                  Salvar
                 </Button>
               </div>
             </form>
